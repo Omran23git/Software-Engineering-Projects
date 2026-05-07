@@ -35,6 +35,16 @@ app.get("/users", async function (req, res) {
   }
 });
 
+app.post("/users/:id/points", async function (req, res) {
+  try {
+    await usersModel.addUserPoints(req.params.id, 5);
+    res.redirect(`/users/${req.params.id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating user points");
+  }
+});
+
 app.get("/users/:id", async function (req, res) {
   try {
     const user = await usersModel.getUserById(req.params.id);

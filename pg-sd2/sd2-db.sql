@@ -9,7 +9,8 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     bio TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    points INT DEFAULT 0
 );
 
 CREATE TABLE listings (
@@ -38,21 +39,24 @@ CREATE TABLE listing_categories (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
-INSERT INTO users (name, email, password, bio) VALUES
-('Ismail Aktouf', 'ismail@example.com', 'password123', 'BookSwap user interested in self-improvement and academic books'),
-('Omran Ali', 'omran@example.com', 'password123', 'Enjoys classic novels and fiction'),
-('Sarah Khan', 'sarah@example.com', 'password123', 'University student selling textbooks');
+INSERT INTO users (name, email, password, bio, points) VALUES
+('Ismail Aktouf', 'ismail@example.com', 'password123', 'BookSwap user interested in self-improvement and academic books', 20),
+('Omran Ali', 'omran@example.com', 'password123', 'Enjoys classic novels and fiction', 15),
+('Sarah Khan', 'sarah@example.com', 'password123', 'University student selling textbooks', 10);
 
 INSERT INTO categories (name) VALUES
 ('Fiction'),
-('Non-Fiction'),
-('Academic');
+('Classic'),
+('Textbook'),
+('Computer Science'),
+('Non-fiction'),
+('Self-help');
 
 INSERT INTO listings (user_id, title, author, isbn, description, book_condition, status) VALUES
 (1, 'Atomic Habits', 'James Clear', '9780735211292', 'Self-improvement book in great condition', 'Very Good', 'Available'),
 (2, 'The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Classic fiction novel', 'Good', 'Available'),
-(3, 'Introduction to Algorithms', 'Thomas H. Cormen', '9780262046305', 'University textbook, slightly used', 'Used', 'Available');
-(2, '1984', 'George Orwell', '9780451524935', 'Classic dystopian fiction novel.', 'Good', 'Available')
+(3, 'Introduction to Algorithms', 'Thomas H. Cormen', '9780262046305', 'University textbook, slightly used', 'Used', 'Available'),
+(2, '1984', 'George Orwell', '9780451524935', 'Classic dystopian fiction novel.', 'Good', 'Available');
 
 INSERT INTO listing_categories (listing_id, category_id) VALUES
 (1, 5),

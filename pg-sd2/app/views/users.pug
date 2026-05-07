@@ -1,28 +1,23 @@
-doctype html
-html
-  head
-    title Users
-    link(rel="stylesheet", href="/styles.css")
-  body
-    header
-      h1 Book Swap
-      nav
-        a(href="/") Home
-        a(href="/listings") Listings
-        a(href="/users") Users
+const db = require("./db");
 
-    .container
-      h2.section-title Users
-      p.small-note Browse users and view their profiles.
+async function getAllUsers() {
+  return await db.query("SELECT * FROM users");
+}
 
-      if users.length
-        each user in users
-          .card
-            h3= user.name
-            p.meta Email: #{user.email}
-            if user.bio
-              p.meta Bio: #{user.bio}
-            a.button-link(href=`/users/${user.id}`) View Profile
-      else
-        p No users found.
+async function getUserById(id) {
+  const rows = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+  return rows[0];
+}
 
+async function addUserPoints(userId, pointsToAdd) {
+  return await db.query(
+    "UPDATE users SET points = points + ? WHERE id = ?",
+    [pointsToAdd, userId]
+  );
+}
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  addUserPoints,
+};

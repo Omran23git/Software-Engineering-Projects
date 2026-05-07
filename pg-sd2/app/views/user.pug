@@ -7,9 +7,9 @@ html
     header
       h1 Book Swap
       nav
-  a(href="/") Home
-  a(href="/listings") Listings
-  a(href="/users") Users
+        a(href="/") Home
+        a(href="/listings") Listings
+        a(href="/users") Users
 
     .container
       if user
@@ -19,22 +19,31 @@ html
           p.meta
             strong Email:
             |  #{user.email}
+
           p.meta
-            strong Bio:
-            |  #{user.bio || "No bio available."}
+            strong Points:
+            |  #{user.points}
 
-        h3 Listings by this user
+          if user.bio
+            p.meta
+              strong Bio:
+              |  #{user.bio}
 
-        if listings.length
+          form(action=`/users/${user.id}/points`, method="POST")
+            button.button-link(type="submit") Award 5 Points
+
+        if listings && listings.length
+          h3 User Listings
           each listing in listings
             .card
-              h3
-                a(href=`/listings/${listing.id}`)= listing.title
-              p.meta Author: #{listing.author}
-              p.meta Condition: #{listing.book_condition}
-              p.meta Status: #{listing.status}
+              h4= listing.title
+              if listing.author
+                p.meta Author: #{listing.author}
+              if listing.status
+                p.meta Status: #{listing.status}
+              a.button-link(href=`/book/${listing.id}`) View Listing
         else
-          p This user has no listings.
+          p This user has no listings yet.
 
         a.button-link(href="/users") Back to Users
       else
