@@ -52,11 +52,17 @@ INSERT INTO listings (user_id, title, author, isbn, description, book_condition,
 (1, 'Atomic Habits', 'James Clear', '9780735211292', 'Self-improvement book in great condition', 'Very Good', 'Available'),
 (2, 'The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Classic fiction novel', 'Good', 'Available'),
 (3, 'Introduction to Algorithms', 'Thomas H. Cormen', '9780262046305', 'University textbook, slightly used', 'Used', 'Available');
+(2, '1984', 'George Orwell', '9780451524935', 'Classic dystopian fiction novel.', 'Good', 'Available')
 
 INSERT INTO listing_categories (listing_id, category_id) VALUES
-(1, 2),
+(1, 5),
+(1, 6),
 (2, 1),
-(3, 3);
+(2, 2),
+(3, 3),
+(3, 4),
+(4, 1),
+(4, 2);
 
 SELECT * FROM users;
 SELECT * FROM categories;

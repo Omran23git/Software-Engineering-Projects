@@ -72,6 +72,26 @@ app.get("/listings", async function (req, res) {
   }
 });
 
+app.get("/book/:id/matches", async function (req, res) {
+  try {
+    const listing = await listingsModel.getListingById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).send("Listing not found");
+    }
+
+    const matches = await listingsModel.getMatchingListings(req.params.id);
+
+    res.render("listing-matches", {
+      listing: listing,
+      matches: matches,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading matching listings");
+  }
+});
+
 app.get("/book/:id", async function (req, res) {
   try {
     const listing = await listingsModel.getListingById(req.params.id);

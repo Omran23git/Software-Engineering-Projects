@@ -44,6 +44,7 @@ html
               each category in categories
                 li= category.name
 
+        a.button-link(href=`/book/${listing.id}/matches`) Find Matching Listings
         a.button-link(href="/listings") Back to Listings
       else
         p Listing not found.

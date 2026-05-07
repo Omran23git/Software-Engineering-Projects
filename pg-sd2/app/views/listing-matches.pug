@@ -1,0 +1,51 @@
+doctype html
+html
+  head
+    title Matching Listings
+    link(rel="stylesheet", href="/styles.css")
+  body
+    header
+      h1 Book Swap
+      nav
+        a(href="/") Home
+        a(href="/listings") Listings
+        a(href="/users") Users
+
+    .container
+      h2.section-title Matching Listings
+
+      if listing
+        p.small-note Showing listings that share categories with "#{listing.title}".
+
+      if matches && matches.length
+        each match in matches
+          .card
+            h3= match.title
+
+            if match.author
+              p.meta
+                strong Author:
+                |  #{match.author}
+
+            if match.description
+              p.meta
+                strong Description:
+                |  #{match.description}
+
+            if match.book_condition
+              p.meta
+                strong Condition:
+                |  #{match.book_condition}
+
+            if match.status
+              p.meta
+                strong Status:
+                |  #{match.status}
+
+            a.button-link(href=`/book/${match.id}`) View Listing
+      else
+        p No matching listings found yet.
+
+      if listing
+        a.button-link(href=`/book/${listing.id}`) Back to Listing
+      a.button-link(href="/listings") Back to Listings
