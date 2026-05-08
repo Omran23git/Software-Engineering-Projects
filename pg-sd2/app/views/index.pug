@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h2.section-title Welcome to Book Swap
+  p.small-note Swap books with other users, discover available listings, and find books that match your interests.
+
+  .card
+    h3 Find your next book
+    p Browse books listed by other users and view details such as author, condition, status and categories.
+    a.button-link(href="/listings") Browse Listings
+
+  .card
+    h3 Join the community
+    p View user profiles, see their listed books, and build reputation through the points system.
+    a.button-link(href="/users") View Users
+
+  if !(session && session.userId)
+    .card
+      h3 Get started
+      p Create an account to message book owners, earn points, and mark swaps.
+      a.button-link(href="/register") Register Now

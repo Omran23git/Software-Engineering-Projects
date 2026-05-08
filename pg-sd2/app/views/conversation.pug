@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  h2.section-title Conversation with #{otherUser.name}
+
+  .messages-thread
+    if messages && messages.length
+      each msg in messages
+        .message-bubble(class=msg.sender_id === session.userId ? 'mine' : 'theirs')
+          p.message-body= msg.body
+          if msg.listing_title
+            p.meta.small-note Re: #{msg.listing_title}
+          p.message-time= new Date(msg.created_at).toLocaleDateString('en-GB')
+    else
+      p.small-note No messages yet. Send the first one below!
+
+  form.message-form(action="/messages", method="POST")
+    input(type="hidden", name="receiver_id", value=otherUser.id)
+    if listingId
+      input(type="hidden", name="listing_id", value=listingId)
+    .form-group
+      textarea(name="body", rows="3", placeholder="Type your message...", required)
+    button.button-link(type="submit") Send Message (+2 pts)
+
+  br
+  a.button-link(href="/messages") Back to Inbox

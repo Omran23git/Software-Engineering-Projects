@@ -1,0 +1,41 @@
+extends layout
+
+block content
+  if user
+    h2.section-title= user.name
+
+    .card
+      p.meta
+        strong Email:
+        |  #{user.email}
+      p.meta
+        strong Points:
+        span.points-badge  #{user.points} pts
+      if user.bio
+        p.meta
+          strong Bio:
+          |  #{user.bio}
+
+      if session && session.userId && session.userId !== user.id
+        a.button-link(href=`/messages/conversation/${user.id}`) Send Message
+
+      if session && session.userId
+        form(action=`/users/${user.id}/points`, method="POST", style="display:inline-block;margin-left:8px")
+          button.button-link(type="submit") Award 5 Points
+
+    if listings && listings.length
+      h3 Listings by #{user.name}
+      each listing in listings
+        .card
+          h4= listing.title
+          if listing.author
+            p.meta Author: #{listing.author}
+          p.meta
+            span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')= listing.status
+          a.button-link(href=`/book/${listing.id}`) View Listing
+    else
+      p This user has no listings yet.
+
+    a.button-link(href="/users") Back to Users
+  else
+    p User not found.

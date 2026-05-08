@@ -1,0 +1,46 @@
+name: PG-SD2 Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./pg-sd2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Syntax check (Node.js)
+        run: |
+          node --check index.js
+          node --check app/app.js
+          node --check app/services/db.js
+          node --check app/services/users.js
+          node --check app/services/listings.js
+          node --check app/services/categories.js
+          node --check app/services/auth.js
+          node --check app/services/messages.js
+
+      - name: Verify required project files exist
+        run: |
+          test -f index.js            && echo "index.js ✓"
+          test -f app/app.js          && echo "app.js ✓"
+          test -f sd2-db.sql          && echo "sd2-db.sql ✓"
+          test -f Dockerfile          && echo "Dockerfile ✓"
+          test -f docker-compose.yml  && echo "docker-compose.yml ✓"

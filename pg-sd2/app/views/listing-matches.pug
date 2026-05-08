@@ -1,0 +1,31 @@
+extends layout
+
+block content
+  h2.section-title Matching Listings
+
+  if listing
+    p.small-note Showing listings that share categories with "#{listing.title}", ranked by best match.
+
+  if matches && matches.length
+    each match in matches
+      .card
+        h3= match.title
+        if match.match_score
+          p.meta
+            strong Match:
+            span.match-score  #{match.match_score} shared #{match.match_score == 1 ? 'category' : 'categories'}
+        if match.author
+          p.meta
+            strong Author:
+            |  #{match.author}
+        if match.book_condition
+          p.meta
+            strong Condition:
+            |  #{match.book_condition}
+        a.button-link(href=`/book/${match.id}`) View Listing
+  else
+    p No matching listings found yet.
+
+  if listing
+    a.button-link(href=`/book/${listing.id}`) Back to Listing
+  a.button-link(href="/listings") Back to Listings

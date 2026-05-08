@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h2.section-title Register
+
+  if error
+    p.error-message= error
+
+  form.auth-form(action="/register", method="POST")
+    .form-group
+      label(for="name") Name
+      input#name(type="text", name="name", required, autocomplete="name")
+    .form-group
+      label(for="email") Email
+      input#email(type="email", name="email", required, autocomplete="email")
+    .form-group
+      label(for="password") Password
+      input#password(type="password", name="password", required, minlength="6")
+    .form-group
+      label(for="bio") Bio (optional)
+      textarea#bio(name="bio", rows="3", placeholder="Tell other readers about yourself...")
+    button.button-link(type="submit") Create Account
+
+  p.small-note Already have an account? #[a(href="/login") Login here]
+  p.small-note You earn 10 welcome points on registration!

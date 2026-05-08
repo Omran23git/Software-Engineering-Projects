@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h2.section-title Book Listings
+  p.small-note Browse all available books for swap.
+
+  if listings.length
+    each listing in listings
+      .card
+        h3
+          a(href=`/book/${listing.id}`)= listing.title
+        p.meta Author: #{listing.author}
+        p.meta Condition: #{listing.book_condition}
+        p.meta
+          span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')= listing.status
+        if listing.categories.length
+          ul.tag-list
+            each category in listing.categories
+              li= category.name
+        a.button-link(href=`/book/${listing.id}`) View Details
+  else
+    p No listings found.

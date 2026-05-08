@@ -1,0 +1,48 @@
+extends layout
+
+block content
+  if listing
+    h2.section-title= listing.title
+
+    .card
+      p.meta
+        strong Author:
+        |  #{listing.author}
+      p.meta
+        strong ISBN:
+        |  #{listing.isbn}
+      p.meta
+        strong Description:
+        |  #{listing.description}
+      p.meta
+        strong Condition:
+        |  #{listing.book_condition}
+      p.meta
+        strong Status:
+        span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')  #{listing.status}
+
+      if owner
+        p.meta
+          strong Owner:
+          |
+          a(href=`/users/${owner.id}`)= owner.name
+
+      if categories.length
+        h3 Categories
+        ul.tag-list
+          each category in categories
+            li= category.name
+
+    .action-bar
+      a.button-link(href=`/book/${listing.id}/matches`) Find Matching Listings
+
+      if session && session.userId && owner && session.userId !== owner.id
+        a.button-link(href=`/messages/conversation/${owner.id}?listing_id=${listing.id}`) Message Owner
+
+      if session && session.userId && owner && session.userId === owner.id && listing.status === 'Available'
+        form(action=`/book/${listing.id}/swap`, method="POST", style="display:inline-block")
+          button.button-link.button-swap(type="submit") Mark as Swapped (+15 pts)
+
+      a.button-link(href="/listings") Back to Listings
+  else
+    p Listing not found.
