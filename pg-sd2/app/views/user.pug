@@ -1,41 +1,53 @@
 extends layout
 
 block content
-  if user
-    h2.section-title= user.name
+  .container
+    if user
+      - const avatarColors = ['#e74c3c','#e67e22','#2ecc71','#3498db','#9b59b6','#1abc9c','#f39c12','#e91e63']
+      - const avatarColor = avatarColors[user.name.charCodeAt(0) % avatarColors.length]
 
-    .card
-      p.meta
-        strong Email:
-        |  #{user.email}
-      p.meta
-        strong Points:
-        span.points-badge  #{user.points} pts
-      if user.bio
-        p.meta
-          strong Bio:
-          |  #{user.bio}
+      .profile-header
+        .avatar.avatar-lg(style=`background:${avatarColor}`)= user.name.charAt(0).toUpperCase()
+        .profile-info
+          h2.section-title= user.name
+          if user.bio
+            p.text-muted= user.bio
+          .points-display
+            span.points-number= user.points
+            span.points-label  points
 
-      if session && session.userId && session.userId !== user.id
-        a.button-link(href=`/messages/conversation/${user.id}`) Send Message
+      .profile-actions
+        if session && session.userId && session.userId !== user.id
+          a.btn.btn-primary(href=`/messages/conversation/${user.id}`) 💬 Send Message
+        if session && session.userId
+          form(action=`/users/${user.id}/points`, method="POST", style="display:inline")
+            button.btn.btn-secondary(type="submit") +5 Points
 
-      if session && session.userId
-        form(action=`/users/${user.id}/points`, method="POST", style="display:inline-block;margin-left:8px")
-          button.button-link(type="submit") Award 5 Points
+      if listings && listings.length
+        h3.subsection-title Books by #{user.name}
+        .books-grid
+          each listing in listings
+            .book-card
+              a.book-cover-link(href=`/book/${listing.id}`)
+                img.book-cover(
+                  src=`https://covers.openlibrary.org/b/isbn/${listing.isbn}-M.jpg`,
+                  onerror="this.onerror=null;this.src='/book-placeholder.svg'",
+                  alt=listing.title,
+                  loading="lazy"
+                )
+              .book-info
+                h3.book-title
+                  a(href=`/book/${listing.id}`)= listing.title
+                p.book-author= listing.author
+                .book-badges
+                  span(class=`badge ${listing.status === 'Available' ? 'badge-success' : 'badge-muted'}`)= listing.status
+                a.btn.btn-primary.btn-sm(href=`/book/${listing.id}`) View
+      else
+        .empty-state
+          p 📚 No listings yet.
+          if session && session.userId === user.id
+            a.btn.btn-primary(href="/listings/new") Add Your First Book
 
-    if listings && listings.length
-      h3 Listings by #{user.name}
-      each listing in listings
-        .card
-          h4= listing.title
-          if listing.author
-            p.meta Author: #{listing.author}
-          p.meta
-            span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')= listing.status
-          a.button-link(href=`/book/${listing.id}`) View Listing
+      a.btn.btn-ghost(href="/users") ← Back to Users
     else
-      p This user has no listings yet.
-
-    a.button-link(href="/users") Back to Users
-  else
-    p User not found.
+      p User not found.

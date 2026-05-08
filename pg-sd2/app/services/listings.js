@@ -13,6 +13,42 @@ async function getListingsByUserId(userId) {
   return db.query("SELECT * FROM listings WHERE user_id = ? ORDER BY created_at DESC", [userId]);
 }
 
+async function searchListings(q, categoryId) {
+  let sql = "SELECT DISTINCT l.* FROM listings l";
+  const params = [];
+  if (categoryId) sql += " JOIN listing_categories lc ON lc.listing_id = l.id";
+  sql += " WHERE 1=1";
+  if (q) {
+    sql += " AND (l.title LIKE ? OR l.author LIKE ?)";
+    params.push(`%${q}%`, `%${q}%`);
+  }
+  if (categoryId) {
+    sql += " AND lc.category_id = ?";
+    params.push(categoryId);
+  }
+  sql += " ORDER BY l.created_at DESC";
+  return db.query(sql, params);
+}
+
+async function createListing(userId, { title, author, isbn, description, book_condition, categoryIds }) {
+  const result = await db.query(
+    "INSERT INTO listings (user_id, title, author, isbn, description, book_condition, status) VALUES (?, ?, ?, ?, ?, ?, 'Available')",
+    [userId, title, author, isbn || null, description || null, book_condition || null]
+  );
+  const listingId = result.insertId;
+  const ids = Array.isArray(categoryIds) ? categoryIds : (categoryIds ? [categoryIds] : []);
+  for (const catId of ids) {
+    await db.query("INSERT INTO listing_categories (listing_id, category_id) VALUES (?, ?)", [listingId, catId]);
+  }
+  return listingId;
+}
+
+async function deleteListing(id) {
+  await db.query("DELETE FROM messages WHERE listing_id = ?", [id]);
+  await db.query("DELETE FROM listing_categories WHERE listing_id = ?", [id]);
+  return db.query("DELETE FROM listings WHERE id = ?", [id]);
+}
+
 async function markAsSwapped(id) {
   return db.query("UPDATE listings SET status = 'Swapped' WHERE id = ?", [id]);
 }
@@ -34,9 +70,7 @@ async function getMatchingListings(listingId) {
 }
 
 module.exports = {
-  getAllListings,
-  getListingById,
-  getListingsByUserId,
-  markAsSwapped,
-  getMatchingListings,
+  getAllListings, getListingById, getListingsByUserId,
+  searchListings, createListing, deleteListing,
+  markAsSwapped, getMatchingListings,
 };

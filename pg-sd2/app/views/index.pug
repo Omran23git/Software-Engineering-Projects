@@ -1,21 +1,39 @@
 extends layout
 
 block content
-  h2.section-title Welcome to Book Swap
-  p.small-note Swap books with other users, discover available listings, and find books that match your interests.
+  .hero
+    .hero-content
+      h1 Find Your Next Great Read
+      p Swap books with readers in your community. List your books, discover new ones, and connect with fellow readers.
+      .hero-stats
+        .stat
+          span.stat-number= availableCount
+          span.stat-label Books Available
+        .stat
+          span.stat-number= userCount
+          span.stat-label Readers
+      .hero-actions
+        a.btn.btn-hero-primary(href="/listings") Browse Books
+        if !(session && session.userId)
+          a.btn.btn-hero-outline(href="/register") Join Free
 
-  .card
-    h3 Find your next book
-    p Browse books listed by other users and view details such as author, condition, status and categories.
-    a.button-link(href="/listings") Browse Listings
-
-  .card
-    h3 Join the community
-    p View user profiles, see their listed books, and build reputation through the points system.
-    a.button-link(href="/users") View Users
-
-  if !(session && session.userId)
-    .card
-      h3 Get started
-      p Create an account to message book owners, earn points, and mark swaps.
-      a.button-link(href="/register") Register Now
+  .container
+    .features-grid
+      .feature-card
+        .feature-icon 🔍
+        h3 Discover Books
+        p Browse books listed by readers. Filter by category or search by title and author.
+        a.btn.btn-primary(href="/listings") Browse Now
+      .feature-card
+        .feature-icon 💬
+        h3 Message Owners
+        p Found a book you want? Message the owner directly and arrange a swap.
+        if session && session.userId
+          a.btn.btn-primary(href="/messages") My Messages
+        else
+          a.btn.btn-primary(href="/register") Get Started
+      .feature-card
+        .feature-icon ⭐
+        h3 Earn Points
+        p Build your reputation. Earn points for listing books, messaging, and completing swaps.
+        a.btn.btn-primary(href="/users") Leaderboard

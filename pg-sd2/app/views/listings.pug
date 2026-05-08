@@ -1,22 +1,53 @@
 extends layout
 
 block content
-  h2.section-title Book Listings
-  p.small-note Browse all available books for swap.
+  .container
+    .page-header
+      h2.section-title Browse Books
+      if session && session.userId
+        a.btn.btn-primary(href="/listings/new") + Add Your Book
 
-  if listings.length
-    each listing in listings
-      .card
-        h3
-          a(href=`/book/${listing.id}`)= listing.title
-        p.meta Author: #{listing.author}
-        p.meta Condition: #{listing.book_condition}
-        p.meta
-          span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')= listing.status
-        if listing.categories.length
-          ul.tag-list
-            each category in listing.categories
-              li= category.name
-        a.button-link(href=`/book/${listing.id}`) View Details
-  else
-    p No listings found.
+    .search-bar
+      form(action="/listings", method="GET")
+        .search-controls
+          input.search-input(type="text", name="q", placeholder="Search by title or author...", value=q)
+          select.search-select(name="category")
+            option(value="") All Categories
+            each cat in categories
+              option(value=cat.id, selected=String(selectedCategory) === String(cat.id))= cat.name
+          button.btn.btn-primary(type="submit") Search
+        if q || selectedCategory
+          a.clear-filters(href="/listings") ✕ Clear filters
+
+    if listings.length
+      .books-grid
+        each listing in listings
+          .book-card
+            a.book-cover-link(href=`/book/${listing.id}`)
+              img.book-cover(
+                src=`https://covers.openlibrary.org/b/isbn/${listing.isbn}-M.jpg`,
+                onerror="this.onerror=null;this.src='/book-placeholder.svg'",
+                alt=listing.title,
+                loading="lazy"
+              )
+            .book-info
+              h3.book-title
+                a(href=`/book/${listing.id}`)= listing.title
+              p.book-author= listing.author
+              .book-badges
+                span(class=`badge ${listing.status === 'Available' ? 'badge-success' : 'badge-muted'}`)= listing.status
+                if listing.book_condition
+                  span.badge.badge-secondary= listing.book_condition
+              if listing.categories && listing.categories.length
+                .tag-list
+                  each cat in listing.categories.slice(0, 3)
+                    span.tag= cat.name
+              a.btn.btn-primary.btn-sm(href=`/book/${listing.id}`) View Details
+    else
+      .empty-state
+        p.empty-icon 📚
+        p No books found.
+        if q || selectedCategory
+          a.btn.btn-primary(href="/listings") Show all books
+        else if session && session.userId
+          a.btn.btn-primary(href="/listings/new") Be the first to list a book!

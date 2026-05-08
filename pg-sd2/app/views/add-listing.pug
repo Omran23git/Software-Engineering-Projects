@@ -1,0 +1,47 @@
+extends layout
+
+block content
+  .container
+    .page-header
+      h2.section-title Add a Book
+      p.text-muted Fill in the details below. Adding a book earns you +5 points!
+
+    if error
+      p.error-message= error
+
+    form.listing-form(action="/listings", method="POST")
+      .form-row
+        .form-group
+          label(for="title") Title *
+          input#title(type="text", name="title", required, placeholder="e.g. Atomic Habits", value=form && form.title)
+        .form-group
+          label(for="author") Author *
+          input#author(type="text", name="author", required, placeholder="e.g. James Clear", value=form && form.author)
+
+      .form-row
+        .form-group
+          label(for="isbn") ISBN
+          input#isbn(type="text", name="isbn", placeholder="e.g. 9780735211292", value=form && form.isbn)
+          p.field-hint Used to fetch the book cover automatically
+        .form-group
+          label(for="book_condition") Condition
+          select#book_condition(name="book_condition")
+            option(value="") Select condition...
+            each cond in ['New', 'Very Good', 'Good', 'Fair', 'Used']
+              option(value=cond, selected=form && form.book_condition === cond)= cond
+
+      .form-group
+        label(for="description") Description
+        textarea#description(name="description", rows="4", placeholder="Describe the book — any notes, highlights, or why you'd recommend it...")= form && form.description
+
+      .form-group
+        label Categories
+        .checkbox-grid
+          each cat in categories
+            label.checkbox-label
+              input(type="checkbox", name="categories", value=cat.id)
+              span= cat.name
+
+      .form-actions
+        button.btn.btn-primary(type="submit") List Book
+        a.btn.btn-secondary(href="/listings") Cancel

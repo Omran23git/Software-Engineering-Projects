@@ -1,31 +1,38 @@
 extends layout
 
 block content
-  h2.section-title Matching Listings
+  .container
+    h2.section-title Matching Books
+    if listing
+      p.text-muted Books that share categories with "#{listing.title}", ranked by best match.
 
-  if listing
-    p.small-note Showing listings that share categories with "#{listing.title}", ranked by best match.
+    if matches && matches.length
+      .books-grid
+        each match in matches
+          .book-card
+            a.book-cover-link(href=`/book/${match.id}`)
+              img.book-cover(
+                src=`https://covers.openlibrary.org/b/isbn/${match.isbn}-M.jpg`,
+                onerror="this.onerror=null;this.src='/book-placeholder.svg'",
+                alt=match.title,
+                loading="lazy"
+              )
+            .book-info
+              h3.book-title
+                a(href=`/book/${match.id}`)= match.title
+              p.book-author= match.author
+              if match.match_score
+                span.match-score ★ #{match.match_score} shared #{match.match_score == 1 ? 'category' : 'categories'}
+              .book-badges
+                if match.book_condition
+                  span.badge.badge-secondary= match.book_condition
+              a.btn.btn-primary.btn-sm(href=`/book/${match.id}`) View Details
+    else
+      .empty-state
+        p.empty-icon 🔍
+        p No matching books found yet.
 
-  if matches && matches.length
-    each match in matches
-      .card
-        h3= match.title
-        if match.match_score
-          p.meta
-            strong Match:
-            span.match-score  #{match.match_score} shared #{match.match_score == 1 ? 'category' : 'categories'}
-        if match.author
-          p.meta
-            strong Author:
-            |  #{match.author}
-        if match.book_condition
-          p.meta
-            strong Condition:
-            |  #{match.book_condition}
-        a.button-link(href=`/book/${match.id}`) View Listing
-  else
-    p No matching listings found yet.
-
-  if listing
-    a.button-link(href=`/book/${listing.id}`) Back to Listing
-  a.button-link(href="/listings") Back to Listings
+    .action-bar
+      if listing
+        a.btn.btn-ghost(href=`/book/${listing.id}`) ← Back to Book
+      a.btn.btn-ghost(href="/listings") Browse All Books

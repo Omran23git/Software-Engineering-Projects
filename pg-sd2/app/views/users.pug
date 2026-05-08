@@ -1,20 +1,28 @@
 extends layout
 
 block content
-  h2.section-title Users
-  p.small-note Users are ranked by points. Earn points by registering, messaging, and completing swaps.
+  .container
+    .page-header
+      h2.section-title Leaderboard
+      p.text-muted Ranked by points. Earn points by listing books, messaging, and completing swaps.
 
-  if users && users.length
-    each user, index in users
-      .card
-        .user-rank ##{index + 1}
-        h3= user.name
-        p.meta Email: #{user.email}
-        p.meta
-          strong Points:
-          span.points-badge  #{user.points} pts
-        if user.bio
-          p.meta Bio: #{user.bio}
-        a.button-link(href=`/users/${user.id}`) View Profile
-  else
-    p No users found.
+    if users && users.length
+      .users-grid
+        each user, index in users
+          .user-card
+            .user-card-top
+              .rank-badge(class=index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '')= '#' + (index + 1)
+              - const avatarColors = ['#e74c3c','#e67e22','#2ecc71','#3498db','#9b59b6','#1abc9c','#f39c12','#e91e63']
+              - const avatarColor = avatarColors[user.name.charCodeAt(0) % avatarColors.length]
+              .avatar(style=`background:${avatarColor}`)= user.name.charAt(0).toUpperCase()
+            .user-card-body
+              h3.user-name= user.name
+              .points-display
+                span.points-number= user.points
+                span.points-label  pts
+              if user.bio
+                p.user-bio= user.bio
+              a.btn.btn-primary.btn-sm(href=`/users/${user.id}`) View Profile
+    else
+      .empty-state
+        p No users found.

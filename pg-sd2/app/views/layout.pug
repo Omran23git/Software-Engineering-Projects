@@ -1,21 +1,25 @@
 doctype html
 html
   head
-    title= title || 'Book Swap'
+    title= title || 'BookSwap'
     link(rel="stylesheet", href="/styles.css")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
   body
-    header
-      h1 Book Swap
-      nav
-        a(href="/") Home
-        a(href="/listings") Listings
-        a(href="/users") Users
-        if session && session.userId
-          a(href="/messages") Messages
-          span.nav-user  Hi, #{session.username}
-          a(href="/logout") Logout
-        else
-          a(href="/login") Login
-          a(href="/register") Register
-    .container
+    header.site-header
+      .nav-inner
+        a.nav-brand(href="/") 📚 BookSwap
+        nav.nav-links
+          a(href="/listings") Browse
+          a(href="/users") Users
+          if session && session.userId
+            a(href="/messages") Messages
+        .nav-actions
+          if session && session.userId
+            a.btn.btn-add(href="/listings/new") + Add Book
+            span.nav-user= session.username
+            a.btn.btn-outline-white(href="/logout") Logout
+          else
+            a.btn.btn-outline-white(href="/login") Login
+            a.btn.btn-white(href="/register") Register
+    main.main-content
       block content

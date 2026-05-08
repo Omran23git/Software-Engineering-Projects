@@ -1,48 +1,62 @@
 extends layout
 
 block content
-  if listing
-    h2.section-title= listing.title
+  .container
+    if listing
+      .book-detail
+        .book-detail-cover
+          img(
+            src=`https://covers.openlibrary.org/b/isbn/${listing.isbn}-L.jpg`,
+            onerror="this.onerror=null;this.src='/book-placeholder.svg'",
+            alt=listing.title
+          )
 
-    .card
-      p.meta
-        strong Author:
-        |  #{listing.author}
-      p.meta
-        strong ISBN:
-        |  #{listing.isbn}
-      p.meta
-        strong Description:
-        |  #{listing.description}
-      p.meta
-        strong Condition:
-        |  #{listing.book_condition}
-      p.meta
-        strong Status:
-        span(class=listing.status === 'Swapped' ? 'status-swapped' : 'status-available')  #{listing.status}
+        .book-detail-info
+          h2.section-title= listing.title
+          p.book-detail-author by #{listing.author}
 
-      if owner
-        p.meta
-          strong Owner:
-          |
-          a(href=`/users/${owner.id}`)= owner.name
+          .book-badges
+            span(class=`badge ${listing.status === 'Available' ? 'badge-success' : 'badge-muted'}`)= listing.status
+            if listing.book_condition
+              span.badge.badge-secondary= listing.book_condition
 
-      if categories.length
-        h3 Categories
-        ul.tag-list
-          each category in categories
-            li= category.name
+          if listing.isbn
+            p.meta
+              strong ISBN:
+              |  #{listing.isbn}
 
-    .action-bar
-      a.button-link(href=`/book/${listing.id}/matches`) Find Matching Listings
+          if listing.description
+            p.meta
+              strong Description:
+              |  #{listing.description}
 
-      if session && session.userId && owner && session.userId !== owner.id
-        a.button-link(href=`/messages/conversation/${owner.id}?listing_id=${listing.id}`) Message Owner
+          if owner
+            .owner-card
+              - const avatarColors = ['#e74c3c','#e67e22','#2ecc71','#3498db','#9b59b6','#1abc9c']
+              - const avatarColor = avatarColors[owner.name.charCodeAt(0) % avatarColors.length]
+              .avatar.avatar-sm(style=`background:${avatarColor}`)= owner.name.charAt(0).toUpperCase()
+              .owner-info
+                span.owner-label Listed by
+                a.owner-name(href=`/users/${owner.id}`)= owner.name
 
-      if session && session.userId && owner && session.userId === owner.id && listing.status === 'Available'
-        form(action=`/book/${listing.id}/swap`, method="POST", style="display:inline-block")
-          button.button-link.button-swap(type="submit") Mark as Swapped (+15 pts)
+          if categories && categories.length
+            .tag-list
+              each category in categories
+                span.tag= category.name
 
-      a.button-link(href="/listings") Back to Listings
-  else
-    p Listing not found.
+          .action-bar
+            a.btn.btn-primary(href=`/book/${listing.id}/matches`) Find Matches
+
+            if session && session.userId && owner && session.userId !== owner.id
+              a.btn.btn-secondary(href=`/messages/conversation/${owner.id}?listing_id=${listing.id}`) 💬 Message Owner
+
+            if session && session.userId && owner && session.userId === owner.id
+              if listing.status === 'Available'
+                form(action=`/book/${listing.id}/swap`, method="POST", style="display:inline")
+                  button.btn.btn-success(type="submit") ✓ Mark as Swapped (+15 pts)
+              form(action=`/book/${listing.id}/delete`, method="POST", style="display:inline", onsubmit="return confirm('Delete this listing?')")
+                button.btn.btn-danger(type="submit") 🗑 Delete
+
+            a.btn.btn-ghost(href="/listings") ← Back
+    else
+      p Listing not found.

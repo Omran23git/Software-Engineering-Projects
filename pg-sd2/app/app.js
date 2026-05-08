@@ -43,9 +43,7 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await authService.login(email, password);
-    if (!user) {
-      return res.render("login", { title: "Login", error: "Invalid email or password" });
-    }
+    if (!user) return res.render("login", { title: "Login", error: "Invalid email or password" });
     req.session.userId = user.id;
     req.session.username = user.name;
     res.redirect("/");
@@ -63,17 +61,15 @@ app.get("/register", (req, res) => {
 app.post("/register", async (req, res) => {
   try {
     const { name, email, password, bio } = req.body;
-    if (!name || !email || !password) {
+    if (!name || !email || !password)
       return res.render("register", { title: "Register", error: "All fields are required" });
-    }
     const userId = await authService.register(name, email, password, bio);
     req.session.userId = userId;
     req.session.username = name;
     res.redirect("/");
   } catch (err) {
-    if (err.message === "Email already registered") {
+    if (err.message === "Email already registered")
       return res.render("register", { title: "Register", error: err.message });
-    }
     console.error(err);
     res.render("register", { title: "Register", error: "Registration failed. Please try again." });
   }
@@ -83,10 +79,19 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
 });
 
-// ── Main pages ───────────────────────────────────────────────────────────────
+// ── Home ──────────────────────────────────────────────────────────────────────
 
-app.get("/", (req, res) => {
-  res.render("index", { title: "Book Swap" });
+app.get("/", async (req, res) => {
+  try {
+    const [allUsers, allListings] = await Promise.all([
+      usersModel.getAllUsers(),
+      listingsModel.getAllListings(),
+    ]);
+    const available = allListings.filter(l => l.status === "Available").length;
+    res.render("index", { title: "Book Swap", userCount: allUsers.length, availableCount: available });
+  } catch (err) {
+    res.render("index", { title: "Book Swap", userCount: 0, availableCount: 0 });
+  }
 });
 
 app.get("/db_test", async (req, res) => {
@@ -94,12 +99,11 @@ app.get("/db_test", async (req, res) => {
     const rows = await db.query("SELECT 1 AS ok");
     res.json(rows[0]);
   } catch (err) {
-    console.error("DB connection failed:", err);
     res.status(500).json({ error: "DB connection failed" });
   }
 });
 
-// ── Users ────────────────────────────────────────────────────────────────────
+// ── Users ─────────────────────────────────────────────────────────────────────
 
 app.get("/users", async (req, res) => {
   try {
@@ -133,21 +137,65 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
-// ── Listings ─────────────────────────────────────────────────────────────────
+// ── Listings ──────────────────────────────────────────────────────────────────
 
 app.get("/listings", async (req, res) => {
   try {
-    const listings = await listingsModel.getAllListings();
+    const { q, category } = req.query;
+    const [listings, categories] = await Promise.all([
+      listingsModel.searchListings(q, category),
+      categoriesModel.getAllCategories(),
+    ]);
     const listingsWithCategories = await Promise.all(
       listings.map(async (listing) => {
-        const categories = await categoriesModel.getListingCategories(listing.id);
-        return { ...listing, categories };
+        const cats = await categoriesModel.getListingCategories(listing.id);
+        return { ...listing, categories: cats };
       })
     );
-    res.render("listings", { title: "Listings", listings: listingsWithCategories });
+    res.render("listings", {
+      title: "Browse Books",
+      listings: listingsWithCategories,
+      categories,
+      q: q || "",
+      selectedCategory: category || "",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading listings");
+  }
+});
+
+app.get("/listings/new", requireAuth, async (req, res) => {
+  try {
+    const categories = await categoriesModel.getAllCategories();
+    res.render("add-listing", { title: "Add a Book", categories });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading form");
+  }
+});
+
+app.post("/listings", requireAuth, async (req, res) => {
+  try {
+    const { title, author, isbn, description, book_condition, categories } = req.body;
+    if (!title || !author) {
+      const allCats = await categoriesModel.getAllCategories();
+      return res.render("add-listing", {
+        title: "Add a Book",
+        categories: allCats,
+        error: "Title and author are required",
+        form: req.body,
+      });
+    }
+    const listingId = await listingsModel.createListing(req.session.userId, {
+      title, author, isbn, description, book_condition,
+      categoryIds: categories || [],
+    });
+    await usersModel.addUserPoints(req.session.userId, 5);
+    res.redirect(`/book/${listingId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating listing");
   }
 });
 
@@ -167,8 +215,10 @@ app.get("/book/:id", async (req, res) => {
   try {
     const listing = await listingsModel.getListingById(req.params.id);
     if (!listing) return res.status(404).send("Listing not found");
-    const categories = await categoriesModel.getListingCategories(req.params.id);
-    const owner = await usersModel.getUserById(listing.user_id);
+    const [categories, owner] = await Promise.all([
+      categoriesModel.getListingCategories(req.params.id),
+      usersModel.getUserById(listing.user_id),
+    ]);
     res.render("book", { title: listing.title, listing, categories, owner });
   } catch (err) {
     console.error(err);
@@ -180,9 +230,7 @@ app.post("/book/:id/swap", requireAuth, async (req, res) => {
   try {
     const listing = await listingsModel.getListingById(req.params.id);
     if (!listing) return res.status(404).send("Listing not found");
-    if (listing.user_id !== req.session.userId) {
-      return res.status(403).send("Not your listing");
-    }
+    if (listing.user_id !== req.session.userId) return res.status(403).send("Not your listing");
     await listingsModel.markAsSwapped(req.params.id);
     await usersModel.addUserPoints(req.session.userId, 15);
     res.redirect(`/book/${req.params.id}`);
@@ -192,7 +240,20 @@ app.post("/book/:id/swap", requireAuth, async (req, res) => {
   }
 });
 
-// ── Messages ─────────────────────────────────────────────────────────────────
+app.post("/book/:id/delete", requireAuth, async (req, res) => {
+  try {
+    const listing = await listingsModel.getListingById(req.params.id);
+    if (!listing) return res.status(404).send("Listing not found");
+    if (listing.user_id !== req.session.userId) return res.status(403).send("Not your listing");
+    await listingsModel.deleteListing(req.params.id);
+    res.redirect(`/users/${req.session.userId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error deleting listing");
+  }
+});
+
+// ── Messages ──────────────────────────────────────────────────────────────────
 
 app.get("/messages", requireAuth, async (req, res) => {
   try {
@@ -208,17 +269,9 @@ app.get("/messages/conversation/:userId", requireAuth, async (req, res) => {
   try {
     const otherUser = await usersModel.getUserById(req.params.userId);
     if (!otherUser) return res.status(404).send("User not found");
-    const messages = await messagesService.getConversation(
-      req.session.userId,
-      req.params.userId
-    );
+    const messages = await messagesService.getConversation(req.session.userId, req.params.userId);
     const listingId = req.query.listing_id || null;
-    res.render("conversation", {
-      title: `Chat with ${otherUser.name}`,
-      otherUser,
-      messages,
-      listingId,
-    });
+    res.render("conversation", { title: `Chat with ${otherUser.name}`, otherUser, messages, listingId });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading conversation");
