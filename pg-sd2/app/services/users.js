@@ -14,6 +14,15 @@ async function getUserByEmail(email) {
   return rows[0];
 }
 
+async function updateUser(id, { name, bio, password }) {
+  if (password) {
+    const bcrypt = require("bcryptjs");
+    const hash = await bcrypt.hash(password, 10);
+    return db.query("UPDATE users SET name=?, bio=?, password=? WHERE id=?", [name, bio || null, hash, id]);
+  }
+  return db.query("UPDATE users SET name=?, bio=? WHERE id=?", [name, bio || null, id]);
+}
+
 async function addUserPoints(userId, pointsToAdd) {
   return db.query(
     "UPDATE users SET points = points + ? WHERE id = ?",
@@ -25,5 +34,6 @@ module.exports = {
   getAllUsers,
   getUserById,
   getUserByEmail,
+  updateUser,
   addUserPoints,
 };

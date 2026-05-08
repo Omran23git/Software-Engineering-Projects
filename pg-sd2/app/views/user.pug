@@ -19,6 +19,9 @@ block content
       .profile-actions
         if session && session.userId && session.userId !== user.id
           a.btn.btn-primary(href=`/messages/conversation/${user.id}`) 💬 Send Message
+        if session && session.userId === user.id
+          a.btn.btn-secondary(href="/profile/edit") ✏ Edit Profile
+          a.btn.btn-primary(href="/listings/new") + Add Book
         if session && session.userId
           form(action=`/users/${user.id}/points`, method="POST", style="display:inline")
             button.btn.btn-secondary(type="submit") +5 Points

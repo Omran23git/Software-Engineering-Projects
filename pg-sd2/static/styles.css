@@ -417,6 +417,8 @@ a:hover { text-decoration: underline; }
 
 .form-actions { display: flex; gap: 10px; margin-top: 8px; }
 
+.form-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
 .error-message {
   background: var(--danger-bg);
   color: var(--danger);

@@ -43,6 +43,18 @@ async function createListing(userId, { title, author, isbn, description, book_co
   return listingId;
 }
 
+async function updateListing(id, { title, author, isbn, description, book_condition, status, categoryIds }) {
+  await db.query(
+    "UPDATE listings SET title=?, author=?, isbn=?, description=?, book_condition=?, status=? WHERE id=?",
+    [title, author, isbn || null, description || null, book_condition || null, status || 'Available', id]
+  );
+  await db.query("DELETE FROM listing_categories WHERE listing_id = ?", [id]);
+  const ids = Array.isArray(categoryIds) ? categoryIds : (categoryIds ? [categoryIds] : []);
+  for (const catId of ids) {
+    await db.query("INSERT INTO listing_categories (listing_id, category_id) VALUES (?, ?)", [id, catId]);
+  }
+}
+
 async function deleteListing(id) {
   await db.query("DELETE FROM messages WHERE listing_id = ?", [id]);
   await db.query("DELETE FROM listing_categories WHERE listing_id = ?", [id]);
@@ -71,6 +83,6 @@ async function getMatchingListings(listingId) {
 
 module.exports = {
   getAllListings, getListingById, getListingsByUserId,
-  searchListings, createListing, deleteListing,
+  searchListings, createListing, updateListing, deleteListing,
   markAsSwapped, getMatchingListings,
 };

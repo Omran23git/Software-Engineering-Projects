@@ -137,6 +137,36 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
+app.get("/profile/edit", requireAuth, async (req, res) => {
+  try {
+    const user = await usersModel.getUserById(req.session.userId);
+    res.render("edit-profile", { title: "Edit Profile", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading profile");
+  }
+});
+
+app.post("/profile/edit", requireAuth, async (req, res) => {
+  try {
+    const { name, bio, password, confirmPassword } = req.body;
+    if (!name) {
+      const user = await usersModel.getUserById(req.session.userId);
+      return res.render("edit-profile", { title: "Edit Profile", user: { ...user, ...req.body }, error: "Name is required" });
+    }
+    if (password && password !== confirmPassword) {
+      const user = await usersModel.getUserById(req.session.userId);
+      return res.render("edit-profile", { title: "Edit Profile", user: { ...user, name, bio }, error: "Passwords do not match" });
+    }
+    await usersModel.updateUser(req.session.userId, { name, bio, password: password || null });
+    req.session.username = name;
+    res.redirect(`/users/${req.session.userId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating profile");
+  }
+});
+
 // ── Listings ──────────────────────────────────────────────────────────────────
 
 app.get("/listings", async (req, res) => {
@@ -237,6 +267,53 @@ app.post("/book/:id/swap", requireAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error marking swap");
+  }
+});
+
+app.get("/book/:id/edit", requireAuth, async (req, res) => {
+  try {
+    const listing = await listingsModel.getListingById(req.params.id);
+    if (!listing) return res.status(404).send("Listing not found");
+    if (listing.user_id !== req.session.userId) return res.status(403).send("Not your listing");
+    const [categories, currentCategories] = await Promise.all([
+      categoriesModel.getAllCategories(),
+      categoriesModel.getListingCategories(req.params.id),
+    ]);
+    const currentCategoryIds = currentCategories.map(c => c.id);
+    res.render("edit-listing", { title: "Edit Listing", listing, categories, currentCategoryIds });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading edit form");
+  }
+});
+
+app.post("/book/:id/edit", requireAuth, async (req, res) => {
+  try {
+    const listing = await listingsModel.getListingById(req.params.id);
+    if (!listing) return res.status(404).send("Listing not found");
+    if (listing.user_id !== req.session.userId) return res.status(403).send("Not your listing");
+    const { title, author, isbn, description, book_condition, status, categories } = req.body;
+    if (!title || !author) {
+      const [allCats, currentCats] = await Promise.all([
+        categoriesModel.getAllCategories(),
+        categoriesModel.getListingCategories(req.params.id),
+      ]);
+      return res.render("edit-listing", {
+        title: "Edit Listing",
+        listing: { ...listing, ...req.body },
+        categories: allCats,
+        currentCategoryIds: currentCats.map(c => c.id),
+        error: "Title and author are required",
+      });
+    }
+    await listingsModel.updateListing(req.params.id, {
+      title, author, isbn, description, book_condition, status,
+      categoryIds: categories || [],
+    });
+    res.redirect(`/book/${req.params.id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating listing");
   }
 });
 

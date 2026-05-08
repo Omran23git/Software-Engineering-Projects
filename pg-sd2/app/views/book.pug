@@ -51,6 +51,7 @@ block content
               a.btn.btn-secondary(href=`/messages/conversation/${owner.id}?listing_id=${listing.id}`) 💬 Message Owner
 
             if session && session.userId && owner && session.userId === owner.id
+              a.btn.btn-secondary(href=`/book/${listing.id}/edit`) ✏ Edit
               if listing.status === 'Available'
                 form(action=`/book/${listing.id}/swap`, method="POST", style="display:inline")
                   button.btn.btn-success(type="submit") ✓ Mark as Swapped (+15 pts)

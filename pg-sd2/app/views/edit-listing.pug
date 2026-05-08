@@ -1,0 +1,51 @@
+extends layout
+
+block content
+  .container
+    .page-header
+      h2.section-title Edit Listing
+
+    if error
+      p.error-message= error
+
+    form.listing-form(action=`/book/${listing.id}/edit`, method="POST")
+      .form-row
+        .form-group
+          label(for="title") Title *
+          input#title(type="text", name="title", required, value=listing.title)
+        .form-group
+          label(for="author") Author *
+          input#author(type="text", name="author", required, value=listing.author)
+
+      .form-row
+        .form-group
+          label(for="isbn") ISBN
+          input#isbn(type="text", name="isbn", placeholder="e.g. 9780735211292", value=listing.isbn || '')
+          p.field-hint Used to fetch the book cover automatically
+        .form-group
+          label(for="book_condition") Condition
+          select#book_condition(name="book_condition")
+            each cond in ['New', 'Very Good', 'Good', 'Fair', 'Used']
+              option(value=cond, selected=listing.book_condition === cond)= cond
+
+      .form-group
+        label(for="status") Status
+        select#status(name="status")
+          each s in ['Available', 'Reserved', 'Swapped']
+            option(value=s, selected=listing.status === s)= s
+
+      .form-group
+        label(for="description") Description
+        textarea#description(name="description", rows="4")= listing.description || ''
+
+      .form-group
+        label Categories
+        .checkbox-grid
+          each cat in categories
+            label.checkbox-label
+              input(type="checkbox", name="categories", value=cat.id, checked=currentCategoryIds.includes(cat.id))
+              span= cat.name
+
+      .form-actions
+        button.btn.btn-primary(type="submit") Save Changes
+        a.btn.btn-ghost(href=`/book/${listing.id}`) Cancel
