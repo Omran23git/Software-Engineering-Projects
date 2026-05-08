@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+     defaults:
+      run:
+        working-directory: ./pg-sd2
 
     steps:
       - name: Checkout repository
