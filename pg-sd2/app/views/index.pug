@@ -1,0 +1,26 @@
+doctype html
+html
+  head
+    title Book Swap
+    link(rel="stylesheet", href="/styles.css")
+  body
+    header
+      h1 Book Swap
+      nav
+        a(href="/") Home
+        a(href="/listings") Listings
+        a(href="/users") Users
+
+    .container
+      h2.section-title Welcome to Book Swap
+      p.small-note Swap books with other users, discover available listings, and find books that match your interests.
+
+      .card
+        h3 Find your next book
+        p Browse books listed by other users and view details such as author, condition, status and categories.
+        a.button-link(href="/listings") Browse Listings
+
+      .card
+        h3 Join the community
+        p View user profiles, see their listed books, and build reputation through user points.
+        a.button-link(href="/users") View Users
